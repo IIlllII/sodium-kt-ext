@@ -1,26 +1,39 @@
-package com.bitbreeds.p2p.crypto.sodium
+package com.bitbreeds.crypto.wrapper
 
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
-import sodium.Sodium
 
 /*
  * Copyright (c) Jonas Waage 18/06/2020
  *
- */
-
-data class Recipient(val key : Uint8Array)
-
-const val maxRecipients = 10
-
-/**
  * This is a port of https://github.com/auditdrivencrypto/private-box to kotlin
  * It uses libsodium directly instead of chloride.
  *
  * It currently has a hardcoded max recipients of 10.
  *
  */
-fun Sodium.createMultiBox(msg : String,recipients : List<Recipient>) : Uint8Array {
+
+/**
+ * Publicly available keys of recipients of message
+ */
+data class Recipient(val key : Uint8Array)
+
+/**
+ * Current maximum of recipients
+ */
+const val maxRecipients = 10
+
+/**
+ *
+ * @param msg The payload to encrypt and send
+ * @param recipients recipients (public keys) that can read this message
+ *
+ * @return the payload to send.
+ */
+fun Sodium.createMultiBox(msg : String, recipients : List<Recipient>) : Uint8Array {
+    if(recipients.size > maxRecipients) {
+        throw IllegalArgumentException("Too many recipients ${recipients.size}")
+    }
     val nonce = this.randombytes_buf(this.crypto_secretbox_NONCEBYTES);
     val key = this.randombytes_buf(32);
     val onetime = this.crypto_box_keypair()
@@ -39,11 +52,17 @@ fun Sodium.createMultiBox(msg : String,recipients : List<Recipient>) : Uint8Arra
     val msgBytes = this.from_string(msg)
     val boxMsg = this.crypto_secretbox_easy(msgBytes,nonce,key)
     return concatBuffers(
-        listOf(nonce, onetime.publicKey,joined,boxMsg)
+        listOf(nonce, onetime.publicKey, joined, boxMsg)
     )
 }
 
 
+/**
+ * @param box payload of box
+ * @param secretKey user key needed to find key to open box
+ *
+ * @return a buffer with [0]=amount of keys this box was sent to, [1..size-1] single use key.
+ */
 fun Sodium.openMultiboxKey(box : Uint8Array, secretKey : Uint8Array) : Uint8Array? {
     val nonce = box.subarray(0, 24)
     val key = box.subarray(24, 24+32)
@@ -66,6 +85,13 @@ fun Sodium.openMultiboxKey(box : Uint8Array, secretKey : Uint8Array) : Uint8Arra
     return null
 }
 
+/**
+ * @param cipherText The encrypted payload
+ * @param nonce The used nonce
+ * @param key key to open box
+ *
+ * @return the decrypted box or null
+ */
 fun Sodium.silentOpenCryptoBox(cipherText:Uint8Array, nonce : Uint8Array, key : Uint8Array) : Uint8Array? {
     return try {
         this.crypto_secretbox_open_easy(cipherText, nonce, key)
@@ -74,7 +100,12 @@ fun Sodium.silentOpenCryptoBox(cipherText:Uint8Array, nonce : Uint8Array, key : 
     }
 }
 
-
+/**
+ * @param box the box to open
+ * @param secretKey key to open box
+ *
+ * @return the decrypted box or throws an error
+ */
 fun Sodium.openMultiBox(box : Uint8Array, secretKey : Uint8Array) : String? {
     val lgtAndKey = this.openMultiboxKey(box,secretKey)
     return if(lgtAndKey != null) {
@@ -99,7 +130,11 @@ fun Sodium.openMultiBox(box : Uint8Array, secretKey : Uint8Array) : String? {
     }
 }
 
-
+/**
+ * @param buffers arrays to join
+ *
+ * @return buffer containing data of all given buffers
+ */
 fun concatBuffers(buffers:List<Uint8Array>) : Uint8Array {
     val size = buffers.map { i->i.length }.sum()
     val nu = Uint8Array(size)

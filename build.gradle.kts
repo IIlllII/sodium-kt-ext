@@ -5,7 +5,7 @@ plugins {
 
 
 
-group = "com.bitbreeds.p2p"
+group = "com.bitbreeds.crypto"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -14,7 +14,6 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-js"))
-
     testImplementation(kotlin("test-js"))
 }
 
@@ -23,7 +22,6 @@ kotlin.target.browser {
     testTask {
         useKarma {
             useChromeHeadless()
-            useFirefox()
         }
     }
 

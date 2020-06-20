@@ -1,10 +1,13 @@
-package sodium
+package com.bitbreeds.crypto.wrapper
 
 import org.khronos.webgl.Uint8Array
 import org.w3c.dom.Window
 
 /*
  * Copyright (c) Jonas Waage 09/06/2020
+ *
+ * Kotlin definitions for libsodium
+ *
  */
 
 @JsName("window")

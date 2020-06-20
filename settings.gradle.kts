@@ -1,2 +1,2 @@
-rootProject.name = "kt-libsodium"
+rootProject.name = "sodium-kt-ext"
 
