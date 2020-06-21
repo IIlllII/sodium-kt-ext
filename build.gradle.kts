@@ -27,10 +27,20 @@ kotlin.target.browser {
 
 
 publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/IIlllII/sodium-kt-ext")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+            }
+        }
+    }
     publications {
         create<MavenPublication>("maven") {
-            from(components["kotlin"])
 
+            from(components["kotlin"])
             pom {
                 name.set(rootProject.name)
                 description.set("Kotlin definitions for sodium")
