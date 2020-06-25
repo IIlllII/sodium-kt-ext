@@ -61,7 +61,7 @@ fun Sodium.createMultiBox(msg : String, recipients : List<Recipient>) : Uint8Arr
  * @param box payload of box
  * @param secretKey user key needed to find key to open box
  *
- * @return a buffer with [0]=amount of keys this box was sent to, [1..size-1] single use key.
+ * @return a buffer with byte 0 as the amount of keys this box was sent to, and 1..size-1 single use key.
  */
 fun Sodium.openMultiboxKey(box : Uint8Array, secretKey : Uint8Array) : Uint8Array? {
     val nonce = box.subarray(0, 24)
