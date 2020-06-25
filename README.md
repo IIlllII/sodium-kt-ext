@@ -8,7 +8,7 @@ Add this to your dependencies:
 
 ```
 dependencies {
-    implementation("com.bitbreeds.crypto","kt-libsodium","1.0-SNAPSHOT")
+    implementation("com.bitbreeds.crypto","sodium-kt-ext","0.0.1")
 }
 ```
 
